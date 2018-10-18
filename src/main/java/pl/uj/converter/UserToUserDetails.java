@@ -10,7 +10,6 @@ public class UserToUserDetails implements UserDetails {
     private User user;
 
     public UserToUserDetails(User user) {
-        if (user == null) throw new NullPointerException("user is null");
         this.user = user;
     }
 
