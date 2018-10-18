@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">    <script src="main.js"></script>
+    <title>project01</title>
+</head>
+<body>
+<canvas id="myCanvas"
+        width="0" height="0"
+        style="border:2px solid #000000;">
+</canvas>
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var context = canvas.getContext("2d");
+    var canvasHeight = 500;
+    var canvasWidth = 500;
+
+    var player;
+    var playerColor = "#FF0000";
+    var playerWidth = 30;
+    var playerHeight = 10;
+    var playerStepLength = 10;
+
+    var keyLeft = '37';
+    var keyRight = '39';
+    var keyFire = '32';
+
+    var bulletHeight = 6;
+    var bulletWidth = 6;
+    var bulletStepLength = 10;
+    var bulletColor = "#0000FF";
+
+    var mobs = [];
+    var mobsLeft = 0;
+    var mobWidth = 30;
+    var mobHeight = 30;
+    var mobColor = "#FFFF00";
+    var distanceBetweenMobs = 40;
+    var mobScoreCost = 10;
+
+    var scoreBoardHeight = 40;
+    var scoreBoardWidth = 100;
+    var scoreBoardColor = "#FFFFFF";
+    var scoreBoard;
+
+    function Mob(startX, startY) {
+        this.currentX = startX;
+        this.currentY = startY;
+        this.height = mobHeight;
+        this.width = mobWidth;
+        this.color = mobColor;
+        this.isKilled = 0;
+        this.drawPosition = function () {
+            context.fillStyle = this.color;
+            context.fillRect(this.currentX, this.currentY, this.width, this.height);
+        };
+        this.clearPosition = function () {
+            this.isKilled = 1;
+            mobsLeft--;
+            if (scoreBoard) {
+                scoreBoard.addScore(mobScoreCost);
+            }
+            context.clearRect(this.currentX, this.currentY, this.width, this.height);
+            if(mobsLeft <= 0){
+                nextLevel();
+            }
+        };
+
+        this.isPointInMobArea = function (pointX, pointY) {
+            if (this.isKilled) return false;
+            if ((pointY >= this.currentY) && (pointY <= (this.currentY + this.height))) {
+                if ((pointX >= this.currentX) && (pointX <= (this.currentX + this.width))) {
+                    this.clearPosition();
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    function Bullet(startX, startY) {
+        this.currentX = startX;
+        this.currentY = startY;
+        this.width = bulletWidth;
+        this.height = bulletHeight;
+        this.stepLength = bulletStepLength;
+        this.color = bulletColor;
+
+        this.launch = function () {
+            context.fillStyle = this.color;
+            context.fillRect(this.currentX, this.currentY - this.stepLength, this.width, this.height);
+            this.moveUp();
+        };
+
+        this.isNearTop = function () {
+            return (this.currentY - this.stepLength) <= 0;
+        };
+
+        function sleep(time) {
+            return new Promise((resolve) => setTimeout(resolve, time)
+        )
+            ;
+        }
+
+        this.isKillMob = function () {
+            if (!mobs) return false;
+            for (var i = 0; i < mobs.length; i++) {
+                if (mobs[i].isPointInMobArea(this.currentX, this.currentY) || mobs[i].isPointInMobArea(this.currentX + this.width, this.currentY)) {
+                    return true;
+                }
+            }
+        };
+
+        this.moveUp = function () {
+            context.clearRect(this.currentX, this.currentY, this.width, this.height);
+            if (!this.isNearTop()) {
+                this.currentY = this.currentY - this.stepLength;
+                if (this.isKillMob()) {
+                    return;
+                }
+                context.fillStyle = this.color;
+                context.fillRect(this.currentX, this.currentY, this.width, this.height);
+                sleep(100).then(() => {
+                    this.moveUp();
+            })
+                ;
+            }
+        }
+    }
+
+    function Player() {
+        this.color = playerColor;
+        this.width = playerWidth;
+        this.height = playerHeight;
+        this.stepLength = playerStepLength;
+        this.currentX = (canvasWidth - this.width) / 2;
+        this.currentY = canvasHeight - this.height - scoreBoardHeight;
+        this.isNearLeftBorder = function () {
+            return (this.currentX - this.stepLength) <= 0;
+        };
+
+        this.isNearRightBorder = function () {
+            return ( this.currentX + this.width + this.stepLength) >= canvasWidth;
+        };
+        this.clearPosition = function () {
+            context.clearRect(this.currentX, this.currentY, this.width, this.height);
+        };
+        this.drawPosition = function () {
+            context.fillStyle = this.color;
+            context.fillRect(this.currentX, this.currentY, this.width, this.height);
+        };
+
+        this.fire = function () {
+            var bulletX = (this.currentX - bulletWidth / 2) + this.width / 2;
+            new Bullet(bulletX, this.currentY - bulletHeight).launch();
+        };
+
+        this.moveLeft = function () {
+            if (!this.isNearLeftBorder()) {
+                this.clearPosition();
+                this.currentX = this.currentX - this.stepLength;
+                this.drawPosition();
+            }
+        };
+        this.moveRight = function () {
+            if (!this.isNearRightBorder()) {
+                this.clearPosition();
+                this.currentX = this.currentX + this.stepLength;
+                this.drawPosition();
+            }
+        }
+    }
+    function Board() {
+        this.score = 0;
+        this.positionX = 10;
+        this.positionY = canvasHeight - 10;
+        this.height = scoreBoardHeight;
+        this.width = scoreBoardWidth;
+        this.color = scoreBoardColor;
+
+        this.drawBoard = function () {
+            context.font = "15px Comic Sans MS";
+            context.fillStyle = "red";
+            context.textAlign = "left";
+            context.fillText(("SCORE : " + this.score), this.positionX, this.positionY);
+        };
+        this.addScore = function (num) {
+            this.cleanBoard();
+            this.score = this.score + num;
+            this.drawBoard();
+        };
+
+        this.cleanBoard = function () {
+            context.fillStyle = this.color;
+            context.fillRect(0, canvasHeight - this.height - 2, canvasWidth, this.height);
+        }
+    }
+
+    function createMobs() {
+        var maxMobsInLine = parseInt(canvasWidth / (mobWidth + distanceBetweenMobs));
+        var maxMobsInColumn = parseInt((canvasHeight / 2) / (mobHeight + distanceBetweenMobs));
+        var maxMobs = maxMobsInLine * maxMobsInColumn;
+        var currentX = 0;
+        var currentY = distanceBetweenMobs;
+        for (var i = 0; i < maxMobs; i++) {
+            if (i !== 0 && ((i % maxMobsInLine) === 0)) {
+                console.log("new line i = " + i);
+                currentY = currentY + distanceBetweenMobs + mobHeight;
+                currentX = 0;
+            }
+            currentX = currentX + distanceBetweenMobs;
+            mobsLeft++;
+            mobs.push(new Mob(currentX, currentY));
+            currentX = currentX + mobWidth;
+        }
+    }
+
+    function drawMobs() {
+        for (var i = 0; i < mobs.length; i++) {
+            mobs[i].drawPosition();
+        }
+    }
+
+    function start() {
+        document.getElementById("startButton").style.display = "none";
+
+        canvas.setAttribute("width", canvasWidth);
+        canvas.setAttribute("height", canvasHeight);
+
+        scoreBoard = new Board();
+        scoreBoard.drawBoard();
+
+        player = new Player();
+        player.drawPosition();
+
+        createMobs();
+        drawMobs();
+    }
+
+    function nextLevel() {
+        createMobs();
+        drawMobs();
+    }
+
+    document.onkeydown = checkKey;
+    function checkKey(e) {
+        e = e || window.event;
+        var key = e.keyCode;
+        if (key == keyLeft) {
+            player.moveLeft();
+        } else if (key == keyRight) {
+            player.moveRight()
+        } else if (key == keyFire) {
+            player.fire();
+        }
+    }
+
+</script>
+<button id="startButton" onclick="start()">START</button>
+<button id="exitButton" onclick="">EXIT</button>
+<br>
+</body>
+</html>

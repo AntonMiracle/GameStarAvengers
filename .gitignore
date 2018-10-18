@@ -32,3 +32,4 @@ build
 *.mv.db
 build.gradle_
 target
+test
