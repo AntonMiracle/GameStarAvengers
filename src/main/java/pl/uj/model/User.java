@@ -11,7 +11,7 @@ public class User {
     private long id;
     private String username;
     private String password;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Score> scores;
 
     public User() {

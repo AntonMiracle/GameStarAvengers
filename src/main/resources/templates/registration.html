@@ -8,11 +8,17 @@
 <div align="center">
     REGISTRATION
 </div>
+<div align="center" th:if="${param.error}">
+    Username exist.
+</div>
 <div align="center">
-    <form action="/user/new" method="post">
+    <form th:action="@{/user/new}" method="post">
         <label> Username : <input type="text" name="username"/> </label><br>
         <label> Password : <input type="password" name="password"/> </label><br>
-        <input type="submit" value="Sign"/>
+        <input type="submit" value="REGISTRATION"/>
+    </form>
+    <form th:action="@{/login}">
+        <input type="submit" value="BACK"/>
     </form>
 </div>
 </body>

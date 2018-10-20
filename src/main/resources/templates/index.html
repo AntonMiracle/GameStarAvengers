@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html   lang="en"
+        xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head>
     <meta charset="UTF-8">
     <title>project01</title>
@@ -207,7 +209,6 @@
         var currentY = distanceBetweenMobs;
         for (var i = 0; i < maxMobs; i++) {
             if (i !== 0 && ((i % maxMobsInLine) === 0)) {
-                console.log("new line i = " + i);
                 currentY = currentY + distanceBetweenMobs + mobHeight;
                 currentX = 0;
             }
@@ -226,6 +227,7 @@
 
     function start() {
         document.getElementById("startButton").style.display = "none";
+        document.getElementById("saveButton").style.display = "inline" ;
 
         canvas.setAttribute("width", canvasWidth);
         canvas.setAttribute("height", canvasHeight);
@@ -245,8 +247,15 @@
         drawMobs();
     }
 
-    function exit() {
-console.log("EXIT");
+    function saveScore() {
+        var xhttp = new XMLHttpRequest();
+//        xhttp.onreadystatechange = function () {
+//            if (this.readyState == 4 && this.status == 200) {
+//                alert(this.responseText);
+//            }
+//        };
+        xhttp.open("GET", "/score/save?score="+scoreBoard.score);
+        xhttp.send();
     }
 
     document.onkeydown = checkKey;
@@ -265,8 +274,13 @@ console.log("EXIT");
 </script>
 <div align="center">
     <button id="startButton" onclick="start()">START</button>
-    <button id="exitButton" onclick="exit()">EXIT</button>
-    <button id="scoresButton" onclick="">SCORES</button>
+    <button id="saveButton" onclick="saveScore()" style="display: none">SAVE</button>
+    <form th:action="@{/exit}" method="get">
+        <input type="submit" value="EXIT"/>
+    </form>
+    <form th:action="@{/score/all}" method="get">
+        <input type="submit" value="SCORES"/>
+    </form>
 </div>
 </body>
 </html>

@@ -5,6 +5,20 @@
     <title>Spring Security Example </title>
 </head>
 <body>
-HELLO
+<div align="center">
+
+    <tr th:each="score : ${session.scores}">
+        <br>
+        <td th:text="${score.createOn}"></td>
+        <td> :</td>
+        <td th:text="${score.score}"></td>
+    </tr>
+</div>
+
+<div align="center">
+    <form th:action="@{/index}" method="get">
+        <input type="submit" value="BACK"/>
+    </form>
+</div>
 </body>
 </html>

@@ -11,14 +11,17 @@
 <div align="center" th:if="${param.logout}">
     You have been logged out.
 </div>
+<div align="center" th:if="${param.registration}">
+    Registration complete.
+</div>
 <div align="center">
     <form th:action="@{/login}" method="post">
         <label> Username : <input type="text" name="username"/> </label><br>
         <label> Password : <input type="password" name="password"/> </label><br>
-        <input type="submit" value="Sign"/>
+        <input type="submit" value="SIGN"/>
     </form>
-    <form action="/registration">
-        <input type="submit" value="Registration"/>
+    <form th:action="@{/registration}">
+        <input type="submit" value="REGISTRATION"/>
     </form>
 </div>
 </body>

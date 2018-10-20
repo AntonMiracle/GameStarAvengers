@@ -1,67 +1,66 @@
 package pl.uj.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 import pl.uj.model.Score;
 import pl.uj.model.User;
-import pl.uj.repositories.ScoreRepository;
 import pl.uj.repositories.UserRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 
 @RestController
 public class Controller {
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private ScoreRepository scoreRepository;
-
-    @RequestMapping("/user/add")
-    public String addUser(@RequestParam(name = "username") String username
-            , @RequestParam(name = "password") String password) {
-        User user = new User(username, password, new HashSet<>());
-        userRepository.save(user);
-        return user.toString();
-    }
 
     @RequestMapping("/user/new")
-    public String createUser(@RequestBody User user) {
-        System.out.println("Before new User :" + user.toString());
-        user = new User(user.getUsername(), user.getPassword(), new HashSet<>());
-        System.out.println("After new User :" + user.toString());
+    public RedirectView createUser(@RequestParam("username") String username
+            , @RequestParam("password") String password
+            , HttpServletRequest request) {
+
+        if (username.length() == 0 || password.length() == 0 || userRepository.findByUsername(username) != null)
+            return new RedirectView("/registration?error");
+
+        User user = new User(username, password, new HashSet<>());
         userRepository.save(user);
-        return "/login";
+        return new RedirectView("/login?registration");
     }
 
-    @RequestMapping("/user/list")
-    public String userList() {
-        StringBuilder result = new StringBuilder();
-        for (User r : userRepository.findAll()) {
-            result.append(r.toString()).append(System.lineSeparator());
-        }
-        return result.toString();
-    }
+    @RequestMapping("/score/save")
+    public RedirectView saveScores(@RequestParam("score") String points) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
 
-    @RequestMapping("/score/add")
-    public String addScore(@RequestParam(name = "username") String username
-            , @RequestParam(name = "score") long score) {
         User user = userRepository.findByUsername(username);
-        Score scoreData = new Score(score, LocalDateTime.now());
-        user.getScores().add(scoreData);
+        Score score = new Score(Long.valueOf(points), LocalDateTime.now());
+        user.getScores().add(score);
+
         userRepository.save(user);
-        return user.toString();
+        return new RedirectView("/index");
     }
 
-    @RequestMapping("/score/list")
-    @ResponseBody
-    public List<Score> scores() {
-        List<Score> scores = new ArrayList<>();
-        for (Score score : scoreRepository.findAll()) {
-            scores.add(score);
-        }
-        return scores;
+    @RequestMapping("/score/all")
+    public RedirectView getScores(HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        User user = userRepository.findByUsername(username);
+
+        request.getSession().setAttribute("scores", user.getScores());
+        return new RedirectView("/score");
+    }
+
+    @RequestMapping("/exit")
+    public RedirectView exit() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName();
+        return new RedirectView("/logout?logout");
     }
 }
