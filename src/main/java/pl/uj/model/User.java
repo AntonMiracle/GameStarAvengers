@@ -13,18 +13,19 @@ public class User {
     private String password;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Score> scores;
+    private boolean banned;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-    public User() {
+    public Role getRole() {
+        return role;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", scores=" + scores +
-                '}';
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public User() {
     }
 
     @Override
@@ -35,9 +36,11 @@ public class User {
         User user = (User) o;
 
         if (id != user.id) return false;
+        if (banned != user.banned) return false;
         if (username != null ? !username.equals(user.username) : user.username != null) return false;
         if (password != null ? !password.equals(user.password) : user.password != null) return false;
-        return scores != null ? scores.equals(user.scores) : user.scores == null;
+        if (scores != null ? !scores.equals(user.scores) : user.scores != null) return false;
+        return role == user.role;
     }
 
     @Override
@@ -46,7 +49,17 @@ public class User {
         result = 31 * result + (username != null ? username.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (scores != null ? scores.hashCode() : 0);
+        result = 31 * result + (banned ? 1 : 0);
+        result = 31 * result + (role != null ? role.hashCode() : 0);
         return result;
+    }
+
+    public boolean isBanned() {
+        return banned;
+    }
+
+    public void setBanned(boolean banned) {
+        this.banned = banned;
     }
 
     public long getId() {
@@ -83,9 +96,24 @@ public class User {
     }
 
     public User(String username, String password, Set<Score> scores) {
-
         this.username = username;
         this.password = password;
         this.scores = scores;
+    }
+
+    public enum Role {
+        ADMIN, USER
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", scores=" + scores +
+                ", banned=" + banned +
+                ", role=" + role +
+                '}';
     }
 }

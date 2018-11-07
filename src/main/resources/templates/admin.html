@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Title</title>
+    <head>
+<body>
+<div align="center">
+    ADMINISTRATION CONSOLE
+    <div align="center" th:if="${users}">
+        <table style="text-align: center;border: 1px solid black;">
+            <tr>
+                <th>USERNAME</th>
+                <th>PASSWORD</th>
+                <th colspan="2">ACTION</th>
+            </tr>
+            <th:block th:each="user : ${users}">
+                <tr>
+                    <td th:text="${user.username}">...</td>
+                    <td th:text="${user.password}">...</td>
+                    <td th:if="${user.banned == false}">
+                        <form th:action="@{/ban/{id}(id=${user.id})}" method="get">
+                            <input type="submit" value="BAN"/>
+                        </form>
+                    </td>
+                    <td th:if="${user.banned == true}">
+                        <form th:action="@{/unban/{id}(id=${user.id})}" method="get">
+                            <input type="submit" value="UNBAN"/>
+                        </form>
+                    </td>
+                    <td>
+                        <form th:action="@{/delete/{id}(id=${user.id})}" method="get">
+                            <input type="submit" value="DELETE"/>
+                        </form>
+                    </td>
+
+                </tr>
+            </th:block>
+        </table>
+    </div>
+
+
+    <form th:action="@{/exit}" method="get">
+        <input type="submit" value="EXIT"/>
+    </form>
+</div>
+<body>
+</html>
