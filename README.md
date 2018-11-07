@@ -36,4 +36,4 @@ was added 11 users with username and password :
 - Thymeleaf
 - Maven
 - Git 
-- User in memory Derby database
+- Use in memory Derby database
