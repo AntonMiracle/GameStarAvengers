@@ -27,3 +27,13 @@ was added 11 users with username and password :
 - user7
 - user8
 - user9
+
+# Technologies
+- Java
+- Spring (SpringBoot,SpringData,DI,Security,RESTfull)
+- JavaScript
+- Ajax
+- Thymeleaf
+- Maven
+- Git 
+- User in memory Derby database
