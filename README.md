@@ -32,8 +32,6 @@ was added 11 users with username and password :
 - Java
 - Spring (SpringBoot,SpringData,DI,Security,RESTfull)
 - JavaScript
-- Ajax
 - Thymeleaf
 - Maven
-- Git 
 - Use in memory Derby database
